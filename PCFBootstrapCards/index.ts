@@ -5,7 +5,6 @@ type DataSet = ComponentFramework.PropertyTypes.DataSet;
 export class PCFBootstrapCards implements ComponentFramework.StandardControl<IInputs, IOutputs> {
 
 	private notifyOutputChanged: () => void;
-	private buttonDelegate: string = "";	
 	private container: HTMLDivElement;
 
 	/**
@@ -39,16 +38,10 @@ export class PCFBootstrapCards implements ComponentFramework.StandardControl<IIn
 	public updateView(context: ComponentFramework.Context<IInputs>): void {
 		// Add code to update control view
 		this.container.innerHTML = "";
+		this.container.classList.add("overflow-auto");
 
-
-		/*
-		let row = document.createElement("div");
-		row.classList.add("row");
-		*/
-		let section = document.createElement("section");
+		let section = document.createElement("div");
 		section.classList.add("page-contain");
-
-
 
 		/** Card Layout
 		 * ------------------------------
@@ -68,7 +61,7 @@ export class PCFBootstrapCards implements ComponentFramework.StandardControl<IIn
 			let card = document.createElement("div");
 			card.classList.add("card");
 
-			let action = document.createElement("a");
+			let action = document.createElement("div");
 			action.classList.add("data-card");
 
 			//header
@@ -105,6 +98,11 @@ export class PCFBootstrapCards implements ComponentFramework.StandardControl<IIn
 			//col5
 			let col5 = document.createElement("div");
 			col5.classList.add("col-6", "text-right");
+			
+			//indicator
+			let indicator = document.createElement("span");
+			let statusColor = "bg-light";
+
 
 			context.parameters.entityDataSet.columns.forEach((column: DataSetInterfaces.Column) => {
 
@@ -112,32 +110,14 @@ export class PCFBootstrapCards implements ComponentFramework.StandardControl<IIn
 										
 					let elem = document.createElement("div");
 					elem.id = "data" + column.order;
-					console.log(Object.values(context.parameters.entityDataSet.records));
-					//console.log(column.name + ":" + currentRecord.getValue(column.name));
-
+					console.log(column.name + ":" + currentRecord.getValue(column.name));
+					console.log(column.dataType);
+					
 					if (currentRecord.getValue(column.name) != null) {
 					
 					// Create Entity Reference
 					let recordEntityReferece = currentRecord.getNamedReference();
 					
-					/*
-					// Create EntityFormOptions for navigation to record
-					let entityFormOptions: any = {
-						createFromLookup: recordEntityReferece,
-						entityId: recordEntityReferece.id,
-						entityName: context.parameters.entityDataSet.getTargetEntityType(),
-						height: 600,
-						openInNewWindow: true,
-						width: 800,
-						windowPosition: 1
-					}
-					// Create function to open record
-					let openRecord =() => {     
-						context.navigation.openForm(entityFormOptions);
-						//window.alert({text: "What's up!"});
-					}
-					*/
-
 					let pageInput: any = {
 						pageType: "entityrecord",
 						entityName: context.parameters.entityDataSet.getTargetEntityType(),
@@ -152,12 +132,8 @@ export class PCFBootstrapCards implements ComponentFramework.StandardControl<IIn
 					// Create function to open record
 					let openRecord =() => {     
 						Xrm.Navigation.navigateTo(pageInput, navigationOptions);
-						//window.alert({text: "What's up!"});
 					}
 
-
-					
-					
 						let formattedValue = currentRecord.getFormattedValue(column.name);
 						// If the field is an image, show the image
 						if (formattedValue.endsWith("jpg") || formattedValue.endsWith("gif") || formattedValue.endsWith("png") || formattedValue.endsWith("jpeg")
@@ -169,7 +145,40 @@ export class PCFBootstrapCards implements ComponentFramework.StandardControl<IIn
 						} else {
 							elem.innerHTML = currentRecord.getFormattedValue(column.name);
 						}
-						
+						//indicator
+						if (column.name != null) {
+							switch (formattedValue) {
+								case "bg-warning":
+									statusColor = "bg-warning";
+									break;
+								case "bg-dark":
+									statusColor = "bg-dark";
+									break;
+								case "bg-success":
+									statusColor = "bg-success";
+									break;
+								case "bg-info":
+									statusColor = "bg-info";
+									break;
+								case "bg-primary":
+									statusColor = "bg-primary";
+									break;
+								case "bg-danger":
+									statusColor = "bg-danger";
+									break;	
+								case "bg-secondary":
+									statusColor = "bg-secondary";
+									break;									
+								default:
+									break;
+							}							
+						}
+
+						//indicator
+						indicator.className = statusColor;
+						indicator.classList.add("beacon");
+						indicator.innerHTML = "";
+
 						switch (column.order) {
 							case 0:
 								elem.classList.add("card-header-text", "h4", "clip-overflow");
@@ -186,7 +195,7 @@ export class PCFBootstrapCards implements ComponentFramework.StandardControl<IIn
 								col2.appendChild(elem);
 								break;
 							case 3:
-								elem.classList.add("card-text", "h-5em");
+								elem.classList.add("card-text");
 								col3.appendChild(elem);
 								break;
 							case 4:
@@ -201,6 +210,7 @@ export class PCFBootstrapCards implements ComponentFramework.StandardControl<IIn
 								break;
 						}
 					}
+					header.appendChild(indicator);
 					header.appendChild(col0);
 					header.appendChild(col1);
 					body.appendChild(col2);
@@ -211,8 +221,9 @@ export class PCFBootstrapCards implements ComponentFramework.StandardControl<IIn
 					action.appendChild(header);
 					action.appendChild(body);
 					action.appendChild(footer);
-
+					
 					card.appendChild(action);
+
 				}
 			});
 			section.appendChild(card);
@@ -241,9 +252,4 @@ export class PCFBootstrapCards implements ComponentFramework.StandardControl<IIn
 	/** Button Event handler for the button created as part of this control
 	* @param event
 	*/
-   private onButtonClick(event: Event): void {
-	   //this._value = this._context.parameters.btnPurpose.raw;
-	   this.buttonDelegate = "true";
-	   this.notifyOutputChanged();
-   }
 }
